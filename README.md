@@ -38,4 +38,4 @@ With the dataset and all python dependencies downloaded, Please run any one of t
 - python3 train_fused.py
 
 # Notes
-Please ensure all filedirectories are correct and all dependencies are installed before running the scripts :)
+Please ensure all filed irectories are correct and all dependencies are installed before running the scripts :)

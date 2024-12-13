@@ -17,6 +17,10 @@ GraphLambda Paper: https://pubs.acs.org/doi/10.1021/acs.jcim.3c00771
 
 # Codebase Structure
 The outermost CS224W_Final_Project directory contains the scripts that can be used to run any of the 4 models.
+1. Dynaformer - train_dynaformer.py
+2. GraphLambda - train_graphLambda.py
+3. Fused - train_fused.py
+4. Meta-Learning - train_meta.py
 
 The models/ directory inside CS224W_Final_Project/ contains the implementation for all the above mentioned models. Dynaformer makes use of dynaformer_layers.py and dynaformer_layers.py, GraphLambda makes use of graphLambda_model.py, and fused model makes use of fused_model.py.
 

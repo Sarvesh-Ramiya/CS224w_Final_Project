@@ -10,7 +10,7 @@ and creates a dataset of tasks for meta-learning, where each task is based on pr
 (so each task contains the same protein but possibly different ligands)
 """
 
-with open('/Users/rbasto/Stanford projects/CS224W/general-set-2020-6-6-6_train_val.pkl', 'rb') as f:
+with open('general-set-2020-6-6-6_train_val.pkl', 'rb') as f:
   dataset = pickle.load(f)
 
 sequences = {}

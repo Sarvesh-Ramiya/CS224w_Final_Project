@@ -10,7 +10,6 @@ from sklearn.model_selection import train_test_split
 import pickle
 from torch_geometric.data import Data, Batch
 import sys
-sys.path.append('/Users/rbasto/Stanford projects/CS224W/CS224W_final_project/models')
 import layers as layers
 import model as model
 from tqdm import tqdm
@@ -20,7 +19,7 @@ import higher
 import random
 
 best_model = Net(9, 64)
-best_model.load_state_dict(torch.load("/Users/rbasto/Stanford projects/CS224W/CS224W_final_project/model_checkpoints/meta_lambda_MD_ils_1_obs_8_hd_64_2024-12-11_10-18-13.pt"))
+best_model.load_state_dict(torch.load("/model_checkpoints/meta_lambda_MD_ils_1_obs_8_hd_64_2024-12-11_10-18-13.pt"))
 
 optimizer = torch.optim.AdamW(best_model.parameters(), lr=1e-3)
 inner_opt = torch.optim.Adam(best_model.parameters(), lr=1e-3)
@@ -50,7 +49,7 @@ def inner_loop(model, loss, inner_opt, task, num_inner_loop_steps, it):
         query_loss = loss(model(query), query.y)
         return query_loss
 
-with open('/Users/rbasto/Stanford projects/CS224W/sequences_data-6-6-6_test.pkl', 'rb') as f:
+with open('sequences_data-6-6-6_test.pkl', 'rb') as f:
     dataset_temp = pickle.load(f)
 
 dataset = []

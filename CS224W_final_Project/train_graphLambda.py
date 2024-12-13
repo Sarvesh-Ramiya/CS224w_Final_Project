@@ -105,7 +105,10 @@ def test_predictions(model, loader):
 
 best_val_error = None
 best_model = None
-hidden_dim = 64
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+train_errors, valid_errors,test_errors = [], [],[]
+hidden_dim = 128
 model = Net(dataset[0].num_node_features, hidden_dim).to(device)
 lr = 1e-3
 optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
@@ -113,7 +116,7 @@ scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
                                 factor=0.5, patience=2,
                                 min_lr=1e-6)
 
-for epoch in range(1, 1001):
+for epoch in range(1, 20):
     lr = scheduler.optimizer.param_groups[0]['lr']
     # train over the train_loader and compute train_error (RMSE)
     train_error = np.sqrt(train(model, train_loader,epoch,device,optimizer))

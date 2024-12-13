@@ -5,6 +5,12 @@ from torch import nn
 from torch_geometric.utils import degree
 import numpy as np
 
+"""
+Citation: this code is largely based on the Graphormer implementation at
+https://github.com/leffff/graphormer-pyg
+We made some Dynaformer-specific changes and some optimizations where necessary
+"""
+
 def decrease_to_max_value(x, max_value):
     x[x > max_value] = max_value
     return x

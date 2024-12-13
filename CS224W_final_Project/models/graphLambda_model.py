@@ -20,6 +20,11 @@ import dynaformer_model as dynaformer_model
 from utils import remove_random_edges
 from torch_geometric.data import Data, Batch
 
+"""
+Citation: this code is largely based on the graphLambda official implementation at
+https://github.com/i-Molecule/graphLambda
+"""
+
 class Net(torch.nn.Module):
     def __init__(self, input_dim, hidden_dim):
         super(Net, self).__init__()

@@ -7,6 +7,10 @@ import networkx as nx
 from torch_geometric.data import Data, Batch
 from torch_geometric.utils.convert import to_networkx
 
+"""
+Citation: this code is from the Graphormer implementation at
+https://github.com/leffff/graphormer-pyg
+"""
 
 def floyd_warshall_source_to_all(G, source, cutoff=None):
     if source not in G:

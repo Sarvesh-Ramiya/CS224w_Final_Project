@@ -1,33 +1,24 @@
 import torch
-import copy
 import sys
 import os
-import random
 import torch
-import deepdish as dd
 import torch.nn.functional as F
 import pickle
 import numpy as np
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 from os.path import join
-from torch.nn import Sequential, Linear, ReLU, GRU, BatchNorm1d, Dropout
-from torch_geometric.nn import NNConv, Set2Set, GCNConv, global_add_pool, global_mean_pool,GATConv,GINConv
-from torch.nn import Sequential, Linear, ReLU
 from torch_geometric.data import DataLoader
 from torch_geometric.data import Data
-from torch_geometric.data import InMemoryDataset #easily fits into cpu memory
 from torch.utils.data import Subset
 from utils import remove_random_edges
 from torch_geometric.data import Data, Batch
 from torch.utils.tensorboard import SummaryWriter
 from datetime import datetime
 from copy import deepcopy
-
 current_dir = os.getcwd()
 sys.path.append(os.path.join(current_dir, 'models'))
 from models.fused_model import Net
-import models.dynaformer_model as dynaformer_model
 
 writer = SummaryWriter(log_dir="logs/fused_"+datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
 
@@ -55,13 +46,17 @@ else:
 
 # Percentage of edges that have to removed to speed up training.
 edge_dropout_rate = 0.2
+
 batch_size = 32
+
+# perform train/val split
 train_ids, val_ids = train_test_split([i for i in range(len(dataset))], test_size=0.3, random_state=42)
 train_loader = DataLoader(Subset(dataset, train_ids), batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(Subset(dataset, val_ids), batch_size=batch_size, shuffle=True)
-
 device = torch.device('cpu')
 loss_function = torch.nn.MSELoss()
+
+# perform training over one train_loader
 def train(model, train_loader,epoch,device,optimizer):
     model.train()
     loss_all = 0
@@ -76,16 +71,16 @@ def train(model, train_loader,epoch,device,optimizer):
         data.to_data_list()
         data = data.to(device)
         optimizer.zero_grad()
-        loss = loss_function(model(data), data.y)
+        loss = loss_function(model(data), data.y)  # loss over batch
         writer.add_scalar("Train Loss (batch)", loss, (epoch - 1) * len(train_loader) + batch_idx)
         loss.backward()
-        loss_all += loss.item() * len(data.y)
-        torch.nn.utils.clip_grad_norm_(model.parameters(), 1)
+        loss_all += loss.item() * len(data.y)  # accumulate to compute loss over epoch
+        torch.nn.utils.clip_grad_norm_(model.parameters(), 1)  # make sure gradient not too large
         optimizer.step()
         batch_idx += 1
     return loss_all / len(train_loader.dataset)
 
-
+# evaluate model on some data
 @torch.no_grad()
 def test(model, loader,device):
     model.eval()
@@ -96,7 +91,7 @@ def test(model, loader,device):
         loss_all += loss_function(model(data), data.y).item() * len(data.y)
     return loss_all / len(loader.dataset)
 
-
+# print ground truth data and compute predictions of model
 @torch.no_grad()
 def test_predictions(model, loader):
     model.eval()
@@ -121,12 +116,16 @@ scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
                                 min_lr=1e-7)
 for epoch in range(1, 20):
     lr = scheduler.optimizer.param_groups[0]['lr']
+    # train over the train_loader and compute train_error (RMSE)
     train_error = np.sqrt(train(model, train_loader,epoch,device,optimizer))
     writer.add_scalar("Train error (epoch)", train_error, epoch)
+
+    # validate over the val_loader and compute val_error (RMSE)
     val_error = np.sqrt(test(model, val_loader,device))
     writer.add_scalar("Val error (epoch)", val_error, epoch)
     valid_errors.append(val_error)
 
+    # save the best model
     if best_val_error is None or val_error <= best_val_error:
         best_val_error = val_error
         best_model = deepcopy(model)
@@ -134,4 +133,3 @@ for epoch in range(1, 20):
     print('Epoch: {:03d}, LR: {:.7f}, Train RMSE: {:.7f}, Validation RMSE: {:.7f}'
         .format(epoch, lr, train_error, val_error))
 
-print('leng of test errors = ', len(test_errors))

@@ -1,6 +1,7 @@
-# Predicting Binding Affinities Using Graph Machine Learning Techniques
+# Predicting Protein-Ligand Binding Affinity With Graph Neural Networks and Meta-Learning
 Project Authors: Sarvesh Ramiya, Rafael Prado Basto, MD Ahsanur Rashid.
 Project is a part of Stanford CS 224w Coursework.
+Blog post Draft Link: https://medium.com/@ramiyasarvesh/63409f4da7ba
 
 # What does this Repository contain?
 This Code repository contains implementation for 4 Models:
@@ -15,9 +16,9 @@ Dynaformer Paper: https://arxiv.org/abs/2208.10230
 GraphLambda Paper: https://pubs.acs.org/doi/10.1021/acs.jcim.3c00771
 
 # Codebase Structure
-CS224W_Final_Project directory contains the scripts that can be used to run any of the 4 models.
+The outermost CS224W_Final_Project directory contains the scripts that can be used to run any of the 4 models.
 
-The models directory inside CS224W_Final_Project/ contains the implementation for all the above mentioned models. Dynaformer makes use of dynaformer_layers.py and dynaformer_layers.py, GraphLambda makes use of graphLambda_model.py, and fused model makes use of fused_model.py.
+The models/ directory inside CS224W_Final_Project/ contains the implementation for all the above mentioned models. Dynaformer makes use of dynaformer_layers.py and dynaformer_layers.py, GraphLambda makes use of graphLambda_model.py, and fused model makes use of fused_model.py.
 
 The logs/ and model_checkpoints/ directories contain files that are generated during the running of our scripts. This is auto-generated.
 
@@ -31,3 +32,6 @@ With the dataset and all python dependencies downloaded, Please run any one of t
 - python3 train_dynaformer.py
 - python3 train_graphLambda.py
 - python3 train_fused.py
+
+# Notes
+Please ensure all filedirectories are correct and all dependencies are installed before running the scripts :)

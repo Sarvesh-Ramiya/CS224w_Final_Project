@@ -9,19 +9,22 @@ from copy import deepcopy
 from io import StringIO
 
 transform = T.Compose([T.remove_isolated_nodes.RemoveIsolatedNodes()])
-def remove_random_edges(graph, p):    
+def remove_random_edges(graph, p): 
+    """
+    Remove p (fraction, number between 0 and 1) random edges from the graph
+    """  
     graph = deepcopy(graph)
     num_edges = int(graph.edge_index.size()[1] / 2)
     keep_edge = (torch.rand(num_edges) > p).reshape(-1,1)
     keep_edge = torch.hstack((keep_edge, keep_edge)).flatten()
     graph.edge_index = graph.edge_index.T[keep_edge].T
     graph.edge_attr = graph.edge_attr[keep_edge]
-    graph = transform(graph)
+    graph = transform(graph)  # removes nodes that were left isolated
     return graph
 
 def fetch_protein_sequence(pdb_id):
     """
-    Fetch the protein sequence from the PDB database.
+    Fetch the protein sequence from the RCSB database.
     """
     try:
         # Fetch FASTA sequence for the PDB ID

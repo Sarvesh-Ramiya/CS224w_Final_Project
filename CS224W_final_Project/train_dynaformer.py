@@ -11,13 +11,10 @@ from torch_geometric.datasets import MoleculeNet
 from torch_geometric.loader import DataLoader
 from torch_geometric.data import Data, Batch
 from torch.utils.data import Subset
-from torch_geometric.utils.convert import to_networkx
-from networkx import all_pairs_shortest_path
 from sklearn.model_selection import train_test_split
 from tqdm import tqdm
 from torch_geometric.nn.pool import global_mean_pool
 from copy import deepcopy
-from torch_geometric.utils import remove_isolated_nodes
 from torch.utils.tensorboard import SummaryWriter
 from datetime import datetime
 from copy import deepcopy
@@ -25,7 +22,6 @@ from utils import remove_random_edges
 
 current_dir = os.getcwd()
 sys.path.append(os.path.join(current_dir, 'models'))
-import models.dynaformer_layers as dynaformer_layers
 import models.dynaformer_model as model
 
 writer = SummaryWriter(log_dir="logs/dynaformer"+datetime.now().strftime("%Y-%m-%d_%H-%M-%S"))
@@ -38,10 +34,11 @@ if MD:
     dataset = []
     with open('md-refined2019-5-5-5_test.pkl', 'rb') as f:
         dataset_temp = pickle.load(f)
+    # we iterate over the dataset to "flatten" it since grouped by protein-ligand complex
     for i in range(len(dataset_temp)):
         for j in range(len(dataset_temp[i])):
             dataset_temp[i][j] = Data(**dataset_temp[i][j].__dict__)  # allowing to use different pyg version
-            dataset_temp[i][j].x = dataset_temp[i][j].x.to(torch.float32)
+            dataset_temp[i][j].x = dataset_temp[i][j].x.to(torch.float32)  # fixes issue with compatibility
             dataset.append(dataset_temp[i][j])
     
 else:
@@ -50,7 +47,7 @@ else:
         dataset = pickle.load(f)
     for i in range(len(dataset)):
         dataset[i] = Data(**dataset[i].__dict__)  # allowing to use different pyg version
-        dataset[i].x = dataset[i].x.to(torch.float32)
+        dataset[i].x = dataset[i].x.to(torch.float32)  # fixes issue with compatibility
 
 hidden_dim = 32
 graph_model = model.DynaFormer(
@@ -72,6 +69,8 @@ graph_model = model.DynaFormer(
 edge_dropout_rate = 0.9
 
 batch_size = 8
+
+# perform train/val split
 train_ids, test_ids = train_test_split([i for i in range(len(dataset))], test_size=0.3, random_state=42)
 train_loader = DataLoader(Subset(dataset, train_ids), batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(Subset(dataset, test_ids), batch_size=batch_size, shuffle=True)
@@ -85,6 +84,7 @@ for epoch in range(20):
     batch_idx = 0
     for batch in tqdm(train_loader):
         batch = batch.to_data_list()
+        # Removing random edges to accelerate training and increase expresiveness.
         for i in range(len(batch)):
             batch[i] = remove_random_edges(batch[i], edge_dropout_rate)
         batch = Batch.from_data_list(batch)
@@ -92,11 +92,11 @@ for epoch in range(20):
         y = batch.y
         optimizer.zero_grad()
         output = global_mean_pool(graph_model(batch), batch.batch)
-        loss = loss_function(output.flatten(), y.flatten())
+        loss = loss_function(output.flatten(), y.flatten())  # loss over batch
         writer.add_scalar("Batch Loss", loss.item(), epoch * len(train_loader) + batch_idx)
-        batch_loss += loss.item() * len(y)
+        batch_loss += loss.item() * len(y)  # accumulate to compute loss over epoch
         loss.backward()
-        torch.nn.utils.clip_grad_norm_(graph_model.parameters(), 1)
+        torch.nn.utils.clip_grad_norm_(graph_model.parameters(), 1)  # make sure gradient not too large
         optimizer.step()
         batch_idx += 1
     
@@ -117,7 +117,8 @@ for epoch in range(20):
     print("EVAL LOSS", val_loss)
     writer.add_scalar("Eval Loss", val_loss, epoch)
     writer.add_scalar("Eval Error", np.sqrt(val_loss), epoch)
-
+    
+    # save the best model
     if best_val_error is None or val_loss <= best_val_error:
         best_val_error = val_loss
         best_model = deepcopy(graph_model)

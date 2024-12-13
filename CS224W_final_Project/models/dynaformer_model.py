@@ -7,6 +7,11 @@ from torch_geometric.data import Data
 from functional import shortest_path_distance, batched_shortest_path_distance
 from dynaformer_layers import GraphormerEncoderLayer, CentralityEncoding, SpatialEncoding, EdgeEncoding
 
+"""
+Citation: this code is largely based on the Graphormer implementation at
+https://github.com/leffff/graphormer-pyg
+We made some Dynaformer-specific changes and some optimizations where necessary
+"""
 
 class DynaFormer(nn.Module):
     def __init__(self,

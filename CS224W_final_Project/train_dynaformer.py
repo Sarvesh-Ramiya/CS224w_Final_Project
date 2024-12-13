@@ -52,7 +52,7 @@ else:
         dataset[i] = Data(**dataset[i].__dict__)  # allowing to use different pyg version
         dataset[i].x = dataset[i].x.to(torch.float32)
 
-hidden_dim = 32
+hidden_dim = 128
 graph_model = model.DynaFormer(
     num_layers=2,
     input_node_dim=dataset[0].num_node_features,
@@ -69,9 +69,9 @@ graph_model = model.DynaFormer(
 )
 
 # Percentage of edges that have to removed to speed up training.
-edge_dropout_rate = 0.9
+edge_dropout_rate = 0.2
 
-batch_size = 8
+batch_size = 32
 train_ids, test_ids = train_test_split([i for i in range(len(dataset))], test_size=0.3, random_state=42)
 train_loader = DataLoader(Subset(dataset, train_ids), batch_size=batch_size, shuffle=True)
 test_loader = DataLoader(Subset(dataset, test_ids), batch_size=batch_size, shuffle=True)

@@ -55,7 +55,7 @@ else:
 
 # Percentage of edges that have to removed to speed up training.
 edge_dropout_rate = 0.2
-batch_size = 16
+batch_size = 32
 train_ids, val_ids = train_test_split([i for i in range(len(dataset))], test_size=0.3, random_state=42)
 train_loader = DataLoader(Subset(dataset, train_ids), batch_size=batch_size, shuffle=True)
 val_loader = DataLoader(Subset(dataset, val_ids), batch_size=batch_size, shuffle=True)
@@ -112,14 +112,14 @@ best_val_error = None
 best_model = None
 device = torch.device('cpu')
 train_errors, valid_errors,test_errors = [], [],[]
-hidden_dim = 64
+hidden_dim = 128
 model = Net(dataset[0].num_node_features, dataset[0].num_edge_features, hidden_dim).to(device)
 lr = 1e-5
 optimizer = torch.optim.AdamW(model.parameters(), lr=lr)
 scheduler = torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min',
                                 factor=0.5, patience=2,
                                 min_lr=1e-7)
-for epoch in range(1, 1001):
+for epoch in range(1, 20):
     lr = scheduler.optimizer.param_groups[0]['lr']
     train_error = np.sqrt(train(model, train_loader,epoch,device,optimizer))
     writer.add_scalar("Train error (epoch)", train_error, epoch)
